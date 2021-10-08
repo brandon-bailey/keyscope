@@ -46,3 +46,8 @@ pub const BANNER: &str = r#"
           (____/               /_/"#;
 
 pub const DEFS: &str = include_str!("defs.yaml");
+
+struct Validations {
+    provider: String,
+    params : Object
+    }

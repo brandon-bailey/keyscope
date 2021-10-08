@@ -104,6 +104,14 @@ fn main() {
                         .about("Read providers and params via CSV")
                         .takes_value(true),
                 ),
+                .arg(
+                    Arg::new("json_in")
+                        .long("--json-in")
+                        .value_name("FILE")
+                        .about("Read providers and params via JSON")
+                        .takes_value(true),
+                ),
+                
         );
     let v = app.render_version();
     let matches = app.to_owned().get_matches();
@@ -195,6 +203,39 @@ fn validate_command(matches: &ArgMatches, cmd_matches: &ArgMatches) -> AnyResult
         let runner = SequenceRunner::from_opts(&opts);
 
         let resp = runner.run(&mut context, &interactions);
+        Ok(resp.ok)
+    } else if cmd_matches.is_present("json_in") {
+        let file = cmd_matches
+            .value_of("json_in")
+            .map(|s| s.to_string())
+            .ok_or_else(|| anyhow!("missing json file"))?;
+            // Old CSV Code
+        //let mut rdr = csv::Reader::from_path(file)?;
+        //let mut interactions = vec![];
+        //let mut context = Context::new();
+        // New JSON Code
+        
+        let json_file_path = Path::new(file);
+        let file = File::open(json_file_path);
+        let validations:Vec<Validation> = serde_json::from_reader(file);
+        println!("{}", validations);
+        /*for res in rdr.records() {
+            let record = res?;
+            let provider = record.iter().next().unwrap();
+
+            // push all keys as: provider_0, provider_1 ..
+            record.iter().skip(1).enumerate().for_each(|(i, v)| {
+                context
+                    .vars_bag
+                    .insert(format!("{}_{}", provider, i + 1), v.to_string());
+            });
+            let interaction = defs.validation_for(&context, provider)?;
+            interactions.push(interaction);
+        }*/
+
+        //let runner = SequenceRunner::from_opts(&opts);
+
+        //let resp = runner.run(&mut context, &interactions);
         Ok(resp.ok)
     } else if cmd_matches.is_present("requirements") {
         let provider = cmd_matches
